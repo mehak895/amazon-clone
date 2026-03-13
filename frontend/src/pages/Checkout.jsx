@@ -2,6 +2,7 @@ import { useState, useContext } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { CartContext } from '../context/CartContext'
 import Navbar from '../components/Navbar'
+import { placeOrder } from '../api/index'
 
 function Checkout() {
   const { cartItems, clearCart } = useContext(CartContext)
@@ -41,30 +42,24 @@ function Checkout() {
     }
     setPlacing(true)
     try {
-      const response = await fetch('/api/orders', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          full_name: form.full_name,
-          phone: form.phone,
-          address: form.address,
-          city: form.city,
-          state: form.state,
-          pincode: form.pincode,
-          total_amount: total,
-          cart_items: cartItems.map(item => ({
-            product_id: item.id,
-            quantity: item.quantity,
-            price: item.price
-          }))
-        })
+      const response = await placeOrder({
+        full_name: form.full_name,
+        phone: form.phone,
+        address: form.address,
+        city: form.city,
+        state: form.state,
+        pincode: form.pincode,
+        total_amount: total,
+        cart_items: cartItems.map(item => ({
+          product_id: item.id,
+          quantity: item.quantity,
+          price: item.price
+        }))
       })
-      const data = await response.json()
-      if (!response.ok) throw new Error(data.error)
       clearCart()
-      navigate(`/order-confirm/${data.order_id}`)
+      navigate(`/order-confirm/${response.data.order_id}`)
     } catch (err) {
-      setOrderError(err.message || 'Failed to place order')
+      setOrderError(err.response?.data?.error || 'Failed to place order')
     } finally {
       setPlacing(false)
     }
