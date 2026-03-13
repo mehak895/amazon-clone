@@ -20,13 +20,25 @@ function Home() {
   const [error, setError] = useState(null)
   const [selectedCategory, setSelectedCategory] = useState('All')
   const [searchTerm, setSearchTerm] = useState('')
+  const [debouncedSearch, setDebouncedSearch] = useState('')
 
-  const fetchProducts = async () => {
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      setDebouncedSearch(searchTerm)
+    }, 400)
+
+    return () => clearTimeout(timeoutId)
+  }, [searchTerm])
+
+  const fetchProducts = async (category, search) => {
     try {
       setLoading(true)
       setError(null)
 
-      const res = await getProducts(selectedCategory, searchTerm)
+      const res = await getProducts(
+        category ?? selectedCategory,
+        search ?? debouncedSearch
+      )
       setProducts(res.data)
 
     } catch (err) {
@@ -39,7 +51,7 @@ function Home() {
 
   useEffect(() => {
     fetchProducts()
-  }, [selectedCategory, searchTerm])
+  }, [selectedCategory, debouncedSearch])
 
   return (
     <div className="bg-[#EAEDED] min-h-screen">
@@ -69,7 +81,7 @@ function Home() {
         <p className="text-sm text-gray-600 mb-4">
           Showing {products.length} results
           {selectedCategory !== 'All' && ` in "${selectedCategory}"`}
-          {searchTerm && ` for "${searchTerm}"`}
+          {debouncedSearch && ` for "${debouncedSearch}"`}
         </p>
 
         {loading ? (
