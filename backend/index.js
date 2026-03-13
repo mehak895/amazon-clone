@@ -11,9 +11,15 @@ const PORT = process.env.PORT || 5001;
 app.use(cors({ origin: "*" }));
 app.use(express.json());
 
+// Health check route
+app.get("/api/health", (req, res) => {
+  res.json({ status: "OK", timestamp: new Date() })
+})
+
 app.use("/api/products", productsRouter);
 app.use("/api/cart", cartRouter);
 app.use("/api/orders", ordersRouter);
 
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+app.listen(PORT, () => 
+  console.log(`Server running on port ${PORT}`));
 module.exports = app;
